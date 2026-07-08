@@ -1,0 +1,71 @@
+classDiagram
+    %% Final architecture — matches pawpal_system.py after the full build.
+    %% Task/Pet/Owner are dataclasses; Scheduler is a stateless service class.
+
+    class Task {
+        +str title
+        +int duration_minutes
+        +str priority
+        +Optional~str~ category
+        +Optional~str~ frequency
+        +Optional~time~ preferred_start
+        +bool completed
+        +Optional~date~ last_completed
+        +Optional~date~ next_due_date
+        +Optional~str~ pet_name
+        +describe() str
+        +mark_complete() None
+        +create_next_occurrence() Optional~Task~
+        +is_due(today) bool
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +Optional~int~ age_years
+        +Dict preferences
+        +List~Task~ tasks
+        +describe() str
+        +add_task(task) None
+        +remove_task(title) None
+        +get_tasks(include_completed) List~Task~
+        +get_pending_tasks() List~Task~
+    }
+
+    class Owner {
+        +str name
+        +int available_minutes
+        +int preferred_start_hour
+        +Dict preferences
+        +List~Pet~ pets
+        +describe() str
+        +can_schedule(duration_minutes) bool
+        +prefers_morning() bool
+        +get_preferred_start_time() time
+        +add_pet(pet) None
+        +get_pet(pet_name) Optional~Pet~
+        +get_all_tasks(include_completed, pet_name) List~Task~
+        +get_pending_tasks(pet_name) List~Task~
+    }
+
+    class Scheduler {
+        +int max_minutes
+        +sort_by_time(tasks) List~Task~
+        +filter_tasks(tasks, completed, pet_name) List~Task~
+        +retrieve_tasks(owner, include_completed, pet_name) List~Task~
+        +organize_tasks(owner, pet_name) List~Task~
+        +build_daily_plan(owner, plan_date, max_minutes, pet_name) List~Dict~
+        +find_time_conflicts(tasks) List~Dict~
+        +warn_conflicts(tasks) List~str~
+        +detect_schedule_conflicts(plan) List~Dict~
+        +complete_task(task) None
+        +complete_recurring_task(task, owner, pet_name) Optional~Task~
+        +get_schedule_summary(plan) str
+    }
+
+    Owner "1" o-- "*" Pet : owns
+    Pet "1" o-- "*" Task : has
+    Task ..> Pet : pet_name (by name)
+    Scheduler ..> Owner : reads pets & tasks
+    Scheduler ..> Task : sorts / filters / flags conflicts
+    Scheduler ..> Pet : adds next recurring task

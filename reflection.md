@@ -53,13 +53,23 @@ The exact-match approach is reasonable for a pet-care planner because it is simp
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used my AI coding assistant across every phase, but for different jobs:
+
+- **Design brainstorming** — turning my three core actions into a UML class diagram and a class skeleton.
+- **Implementation** — fleshing out the Phase 4 algorithmic layer: `sort_by_time`, `filter_tasks`, recurrence (`create_next_occurrence`/`complete_recurring_task`), and conflict detection (`warn_conflicts`/`find_time_conflicts`).
+- **Refactoring and review** — asking "how could this algorithm be simplified for better readability or performance?" on my conflict-detection code.
+- **Debugging and integration** — wiring `pawpal_system.py` into `app.py` via `st.session_state`, and generating the test suite in `tests/test_pawpal.py`.
+- **Documentation** — drafting docstrings, the README Features/Smarter Scheduling/Demo sections, and updating the UML to `uml_final.mmd`.
+
+The most helpful prompts were **specific and file-anchored**: attaching `pawpal_system.py` and asking a narrow question (e.g., "how should the `Scheduler` retrieve all tasks from the `Owner`'s pets?" or "what edge cases should I test for sorting and recurring tasks?") gave far better answers than broad "build me a scheduler" requests. Asking for a *plan or a list of options* before code also helped me stay the decision-maker.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+One clear moment: my conflict detector originally grouped **un-timed** tasks (no `preferred_start`) into a shared bucket and reported two of them as a "conflict." The AI-generated grouping looked reasonable, but I rejected that behavior — two tasks with no set time aren't scheduled at the same time, so it was a false positive. I changed `find_time_conflicts` to skip tasks with no `preferred_start` and added a regression test (`test_untimed_tasks_are_not_a_conflict`) so it can't come back.
+
+I also **rejected a "more Pythonic" suggestion**: collapsing the grouping into a one-line `itertools.groupby`. It required pre-sorting the input and was harder to read for no real gain at this scale, so I kept the explicit dictionary grouping.
+
+I verified AI suggestions three ways: (1) running `python main.py` and reading the actual schedule/conflict output, (2) running `python -m pytest` after each change, and (3) writing a small edge-case script (empty list, un-timed tasks, single task) to confirm `warn_conflicts` returns messages instead of crashing. I treated "it looks right" as a starting point, not proof.
 
 ---
 
@@ -67,13 +77,23 @@ The exact-match approach is reasonable for a pet-care planner because it is simp
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+My suite in `tests/test_pawpal.py` covers the behaviors most likely to break:
+
+- **Task completion** — `mark_complete()` flips `completed` to `True`.
+- **Task addition** — adding a task to a `Pet` increases its task count.
+- **Sorting correctness** — `sort_by_time()` returns tasks in chronological order.
+- **Un-timed sorting (edge case)** — a task with no `preferred_start` sorts *last*, not first.
+- **Recurrence logic** — completing a daily task creates a new occurrence on the pet with `next_due_date == today + 1 day`.
+- **Conflict detection** — two tasks sharing a start time produce exactly one warning.
+- **Un-timed conflict regression** — two un-timed tasks are *not* flagged (locks in the bug fix from section 3b).
+
+These matter because sorting, recurrence, and conflict detection are the "smart" parts of the app — the pieces a user actually relies on and the pieces most likely to regress when I refactor. The two edge-case tests specifically guard behavior that is easy to get subtly wrong.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+**Confidence: 3 / 5 stars.** All 7 tests pass and the CLI demo behaves correctly, so I'm confident in the core happy paths (sorting, filtering, single-day planning, exact-time conflicts, daily recurrence). I hold back the last two stars because my conflict detection only checks exact time matches (see 2b), and I haven't tested weekly/monthly recurrence boundaries, capacity overflow, or invalid input as thoroughly.
+
+If I had more time I would test: **duration overlaps** (a 30-min task at 08:00 vs. one at 08:15), **weekly/monthly `next_due_date` math** around month boundaries, **capacity limits** (a task longer than the owner's remaining minutes is skipped), and **input validation** (empty title or `duration <= 0` raising `ValueError`).
 
 ---
 
@@ -81,12 +101,14 @@ The exact-match approach is reasonable for a pet-care planner because it is simp
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I'm most satisfied with the **algorithmic layer and the CLI-first workflow**. Building and verifying the logic in `main.py` and `pytest` *before* touching the Streamlit UI meant that when I connected `app.py`, the backend was already trustworthy and integration was mostly wiring, not debugging. I'm also happy that I caught and fixed a real bug (the un-timed-tasks false conflict) instead of just accepting generated code.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+- **Stronger conflict detection** — promote interval-overlap checking (currently only in `detect_schedule_conflicts` on a built plan) into the core check so near-misses like 08:00 + 08:15 are caught.
+- **Remove dead code** — `pawpal.py` is a leftover early design that `app.py` no longer uses; I'd delete it so the diagram and code have a single source of truth.
+- **Richer UI** — editing/deleting tasks and marking them complete from the app, plus saving data so it survives a page reload (not just `st.session_state`).
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+The biggest lesson was what it means to be the **lead architect** rather than a passenger. The AI could generate plausible code fast, but it didn't know that un-timed tasks shouldn't conflict, that a `groupby` one-liner wasn't worth the readability cost, or that `app.py` was importing a stale module. Those were *my* calls, made by reading the code, running it, and testing it. AI is a powerful accelerator for drafting and exploring options, but the responsibility for correctness, simplicity, and design coherence stayed with me — and keeping separate chat sessions per phase helped me hold that context without letting the assistant blur the boundaries between design, implementation, and testing.
