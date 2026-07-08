@@ -17,26 +17,4 @@ classDiagram
     }
 
     class Schedule {
-        +List tasks
-        +int max_minutes
-        +add_task(title:str, duration_minutes:int, priority:str, category:Optional[str])
-        +generate_today_plan(user:User, pet:Pet, plan_date:Optional[date]) TodaysPlan
-        -_sorted_tasks() List
-        -_explain_reason(task:Dict, remaining_minutes:int, user:User, pet:Pet) str
-    }
-
-    class TodaysPlan {
-        +str owner_name
-        +str pet_name
-        +date plan_date
-        +List entries
-        +int total_minutes
-        +add_entry(title:str, start_time:datetime, duration_minutes:int, priority:str, reason:str)
-        +summary_text() str
-        +explain() str
-    }
-
-    Schedule --> TodaysPlan : creates
-    Schedule --> User : uses
-    Schedule --> Pet : uses
-    TodaysPlan o-- "*" TaskEntry : contains
+        +

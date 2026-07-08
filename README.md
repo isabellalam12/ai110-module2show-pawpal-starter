@@ -75,8 +75,17 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================================================ test session starts ============================================================
+platform darwin -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/bella/Desktop/AI110/ai110-module2show-pawpal-starter
+plugins: anyio-4.14.1
+collected 7 items                                                                                                                           
+
+tests/test_pawpal.py .......                                                                                                          [100%]
+
+============================================================= 7 passed in 0.03s ============================================================
 ```
+Confidence Level: 3 stars
 
 ## 📐 Smarter Scheduling
 
