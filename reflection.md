@@ -12,8 +12,16 @@ PawPal+ is built around three things a pet owner should always be able to do:
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+- My initial UML design focused on a small domain model with one class for the pet owner and pet, one class for each care task, one scheduler class, and one class for the generated daily plan.
+
+- The main classes were:
+  - `Pet`: stores the pet's name, species, age, and any pet-specific preferences.
+  - `User`: stores the owner name, available time, preferred schedule start, and general preferences.
+  - `Task`: represents a single pet care task with title, duration, priority, category, and optional metadata.
+  - `Schedule`: holds the task list, sorts tasks by priority and duration, and builds the today's plan based on available minutes.
+  - `TodaysPlan`: stores scheduled entries, tracks total planned time, and provides human-readable summary and explanation methods.
+
+- Responsibilities were divided so that `Task` and `Pet` are simple data objects, `User` encapsulates owner constraints, `Schedule` performs the planning logic, and `TodaysPlan` holds the output and explains why tasks were chosen.
 
 **b. Design changes**
 
