@@ -80,14 +80,18 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ adds a layer of scheduling intelligence on top of the core classes. Each feature below is implemented in [`pawpal_system.py`](pawpal_system.py).
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()` | Sorts tasks chronologically by `preferred_start` (HH:MM); un-timed tasks sort last. `Scheduler._sort_tasks()` is the richer sort the planner uses (time → priority → duration → title). |
+| Filtering | `Scheduler.filter_tasks()` | Filters a task list by pet name and/or completion status. |
+| Conflict detection | `Scheduler.warn_conflicts()`, `Scheduler.find_time_conflicts()` | Flags tasks sharing the same start time for the same **or** different pets. `find_time_conflicts()` returns structured data; `warn_conflicts()` wraps it into human-readable warnings and never crashes. `Scheduler.detect_schedule_conflicts()` additionally catches duration **overlaps** in an already-built daily plan. |
+| Recurring tasks | `Task.mark_complete()`, `Task.create_next_occurrence()`, `Scheduler.complete_recurring_task()` | Completing a daily/weekly task computes the next due date with `timedelta` and auto-creates the next occurrence on the pet. |
+
+### Building a daily plan
+
+`Scheduler.build_daily_plan()` ties these together: it retrieves and sorts each pet's due tasks, fits them within the owner's available minutes, resolves time collisions via `_has_conflict()`, and returns a plan with a short reason for each choice (`_explain_reason()`). Use `Scheduler.get_schedule_summary()` for a readable summary.
 
 ## 📸 Demo Walkthrough
 

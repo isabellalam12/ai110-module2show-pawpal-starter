@@ -39,8 +39,13 @@ PawPal+ is built around three things a pet owner should always be able to do:
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+*Describe one tradeoff your scheduler makes.*
+
+My `Scheduler.warn_conflicts()` / `find_time_conflicts()` methods detect conflicts by **exact preferred-start-time matches**, not by **overlapping durations**. Tasks are bucketed by their `preferred_start` time, and any time slot holding more than one task is flagged as a conflict. This means two tasks that start at the same time (e.g., a 08:00 walk and an 08:00 tooth-brushing) are caught, but two tasks whose *durations* overlap are not — a 30-minute walk at 08:00 and a feeding at 08:15 fall in different buckets and raise no warning, even though they physically collide.
+
+*Why is that tradeoff reasonable for this scenario?*
+
+The exact-match approach is reasonable for a pet-care planner because it is simple, fast, and predictable. It runs in a single O(n) pass (group by time, flag buckets with more than one task) with no interval math, so the logic is easy to read, test, and trust. For a busy owner, the most common real mistake is scheduling two things at the *same* clock time, which is exactly what this catches. Full overlap detection would need every task to have both a start time and a reliable duration and would add O(n²)-style interval comparisons and more edge cases (back-to-back vs. truly overlapping). I chose to keep the core conflict check lightweight and readable, and I left the stronger interval-overlap check available separately in `detect_schedule_conflicts()`, which runs against an already-built daily plan when I do want to catch duration overlaps.
 
 ---
 
