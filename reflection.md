@@ -2,6 +2,14 @@
 
 ## 1. System Design
 
+**Core user actions**
+
+PawPal+ is built around three things a pet owner should always be able to do:
+
+1. **Add a pet (and owner info).** The owner enters their name and registers one or more pets (name, species). This gives the app someone to plan for and a place to attach care tasks.
+2. **Add / schedule a care task for a pet.** The owner records a task such as a walk, feeding, or medication, along with how long it takes (duration) and how important it is (priority). Tasks belong to a specific pet.
+3. **Generate and view today's plan.** The owner asks PawPal+ to build a daily schedule. The system orders the pet's tasks based on constraints like priority and available time, then displays the plan clearly so the owner knows what to do and when.
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.

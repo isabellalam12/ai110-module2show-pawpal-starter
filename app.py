@@ -1,5 +1,7 @@
 import streamlit as st
 
+from pawpal import Pet, Schedule, TodaysPlan, User
+
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
 st.title("🐾 PawPal+")
